@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 delegate void RandomSpawnCallback(GameObject character);
 
-public class SpawnNPC : MonoBehaviour
+public class SpawnNPC : ObserverSubject
 {
     [Header("Character Configurations")]
     [SerializeField] List<CharacterAppearanceObject> npcAppearanceObjects;
@@ -46,13 +46,7 @@ public class SpawnNPC : MonoBehaviour
 
     void RegisterResidentForCharacter(GameObject character)
     {
-        residentManager.RegisterResident(character,
-            onDone: (identification) => {
-                Debug.Log(string.Format("Welcome ${0} come to this world!", identification.Name));
-            },
-            onError: (error) =>{
-                Destroy(character);
-            });
+        NotifyObservers(character);
     }
 
     void RandomSpawn(RandomSpawnCallback callback)
@@ -72,7 +66,8 @@ public class SpawnNPC : MonoBehaviour
             new Vector3(
                 spawnPointTransform.position.x + Random.Range(-2, 2),
                 spawnPointTransform.position.y,
-                spawnPointTransform.position.z + Random.Range(-2, 2))
+                spawnPointTransform.position.z + Random.Range(-2, 2)),
+            keepItemPrefabConnection: false
             );
 
         callback(character);

@@ -4,13 +4,18 @@ using UnityEngine;
 public class NPCAnimatorController : MonoBehaviour
 {
     [SerializeField] private Animator animator;
-    private  List<Collider> colliders;
+    private List<Collider> colliders;
 
     private bool isGrounded = false;
 
     private void Awake()
     {
-        if(!animator) animator = GetComponent<Animator>();
+        if (!animator) animator = GetComponent<Animator>();
+    }
+
+    private void Start()
+    {
+        colliders = new();
     }
 
     private void OnCollisionEnter(Collision collision)

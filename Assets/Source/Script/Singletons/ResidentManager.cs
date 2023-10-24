@@ -2,9 +2,16 @@
 using System;
 using UnityEngine;
 
-public class ResidentManager: MonoBehaviour
+
+public class ResidentManager : MonoBehaviour, IObserver
 {
     private static ResidentManager instance;
+
+    [SerializeField]
+    private ObserverSubject spawnManager;
+
+    [SerializeField]
+    private readonly string observerRegistryName = "residentObserver";
 
     public readonly List<ResidentIdentification> residentsIndentifications = new();
 
@@ -31,7 +38,7 @@ public class ResidentManager: MonoBehaviour
                 instance = FindObjectOfType<ResidentManager>();
                 if(!instance)
                 {
-                    instance = new GameObject(name: "ResidentManager(Singleton)").AddComponent<ResidentManager>();
+                    instance = new GameObject(name: "ResidentManager (Singleton)").AddComponent<ResidentManager>();
                 }
             }
             return instance;
@@ -45,6 +52,18 @@ public class ResidentManager: MonoBehaviour
             Destroy(this);
         }
         DontDestroyOnLoad(this);
+    }
+
+    private void OnEnable()
+    {
+        GameObject spawnManagerObject = GameObject.Find("SpawnManager");
+        if (spawnManager == null)
+        {
+            Debug.LogWarning("Cannot found Observer Subject of SpawnManager");
+            return;
+        }
+        spawnManager = spawnManagerObject.GetComponent<ObserverSubject>();
+        spawnManager.AddObserver(observerRegistryName, this);
     }
 
     /// <summary>
@@ -85,6 +104,20 @@ public class ResidentManager: MonoBehaviour
         }
 
 
+    }
+
+    public void OnNotify<T>(T character)
+    {
+        if(typeof(T) == typeof(GameObject))
+        {
+            RegisterResident(character as GameObject,
+                onDone: (identification) => {
+                    Debug.Log(string.Format("Welcome ${0} come to this world!", identification.Name));
+                },
+                onError: (error) => {
+                    Destroy(character as GameObject);
+                });
+        }
     }
 }
 
